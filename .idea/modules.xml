@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Smog.iml" filepath="$PROJECT_DIR$/Smog.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Smog-mobileapp.iml" filepath="$PROJECT_DIR$/Smog-mobileapp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

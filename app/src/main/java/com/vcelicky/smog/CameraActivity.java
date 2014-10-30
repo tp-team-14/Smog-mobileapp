@@ -1,10 +1,8 @@
 package com.vcelicky.smog;
 
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -14,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.vcelicky.smog.utils.NetworkUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,16 +31,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by jaro on 10. 10. 2014.
+ * Created by jerry on 10. 10. 2014.
  */
 public class CameraActivity extends BaseActivity {
     private static final String TAG = CameraActivity.class.getSimpleName();
 
     public static final int MEDIA_TYPE_IMAGE = 1;
-    public static final int MEDIA_TYPE_VIDEO = 2;
-    public static final int MEDIA_TYPE_COMPRESSED = 3;
+    public static final int MEDIA_TYPE_COMPRESSED = 2; //BASE64
+    public static final String DIRECTORY_MAIN = "MyCameraApp";
+    public static final String DIRECTORY_UPLOAD = "to_upload";
 
-    private static String urlString = "http://192.168.0.101:80";
+    //private static String urlString = "http://192.168.0.101:80";
+    private static String urlString = "http://team14-14.ucebne.fiit.stuba.sk/adhunter/upload-billboard";
     private byte[] imageByteArray = null;
     private String imageDataString = null;
 
@@ -139,11 +141,16 @@ public class CameraActivity extends BaseActivity {
                 fos.write(imageByteArray);
                 fos.close();
 
-                Toast.makeText(getApplicationContext(), "Photo was saved!", Toast.LENGTH_SHORT)
+                /*
+                Toast.makeText(getApplicationContext(), "Photo was saved to "
+                        + compressedFile.getAbsolutePath(), Toast.LENGTH_SHORT)
                         .show();
+                */
 
-                //Start uploading a photo
-                new UploadAsyncTask().execute();
+                //Start uploading a photo if WiFi is connected and active
+                if(NetworkUtil.isWiFiConnected(getApplicationContext())) {
+                    new UploadAsyncTask().execute();
+                }
                 mCamera.startPreview();
 
             } catch (FileNotFoundException e) {
@@ -155,19 +162,31 @@ public class CameraActivity extends BaseActivity {
     };
 
     //Create a File for saving an image or video
-    private static File getOutputMediaFile(int type) {
+    private File getOutputMediaFile(int type) {
         if(!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             Log.d(TAG, "SD Card is not mounted!");
             return null;
         }
 
         File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                Environment.DIRECTORY_PICTURES), DIRECTORY_MAIN);
 
         if(!mediaStorageDir.exists()) {
             if(!mediaStorageDir.mkdirs()) {
-                Log.d("MyCameraApp", "failed to create directory");
+                Log.d(TAG, "failed to create " + DIRECTORY_MAIN + "directory");
                 return null;
+            }
+        }
+
+        //ak WiFi nie je zapnuta, vytvori sa priecinok to_upload, kde sa budu ukladat fotky odfotene v offline rezime
+        if(!NetworkUtil.isWiFiConnected(getApplicationContext())) {
+            mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_PICTURES + File.separator + DIRECTORY_MAIN), DIRECTORY_UPLOAD);
+            if(!mediaStorageDir.exists()) {
+                if(!mediaStorageDir.mkdirs()) {
+                    Log.d(TAG, "failed to create " + DIRECTORY_UPLOAD + "directory");
+                    return null;
+                }
             }
         }
 
@@ -179,9 +198,6 @@ public class CameraActivity extends BaseActivity {
         if(type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
             "IMG_" + timeStamp + ".jpg");
-        } else if(type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-            "VID_" + timeStamp + ".mp4");
         } else if(type == MEDIA_TYPE_COMPRESSED) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
             "IMG_" + timeStamp + "_base64.jpg");
@@ -192,6 +208,8 @@ public class CameraActivity extends BaseActivity {
     }
 
     private class UploadAsyncTask extends AsyncTask<String, Integer, String> {
+
+        private String response = "";
 
         @Override
         protected void onPreExecute() {
@@ -204,8 +222,8 @@ public class CameraActivity extends BaseActivity {
             try {
                 HttpURLConnection conn = null;
                 URL url = new URL(urlString);
-                String attachmentName = "ahoj";
-                String attachmentFileName = "ahoj.jpg";
+                String attachmentName = "photo";
+                String attachmentFileName = "photo.jpg";
                 String boundary =  "*****";
                 String twoHyphens = "--";
                 String crlf = "\r\n";
@@ -244,8 +262,7 @@ public class CameraActivity extends BaseActivity {
                     stringBuilder.append(line).append("\n");
                 }
                 responseStreamReader.close();
-                String response = stringBuilder.toString();
-                Log.d(TAG, "response = " + response);
+                response = stringBuilder.toString();
                 responseStream.close();
                 conn.disconnect();
 
@@ -260,9 +277,8 @@ public class CameraActivity extends BaseActivity {
 
         @Override
         protected void onPostExecute(String s) {
-            //Toast.makeText(getApplicationContext(), "Mehehe", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
             super.onPostExecute(s);
         }
     }
-
 }
