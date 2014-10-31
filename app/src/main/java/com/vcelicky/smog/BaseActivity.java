@@ -1,6 +1,9 @@
 package com.vcelicky.smog;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,5 +34,26 @@ public class BaseActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     *
+     * @param context
+     * @return TRUE if WiFi is enabled and connected, otherwise FALSE.
+     */
+    public static boolean isWiFiConnected(Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnected();
+        boolean isWiFi = false;
+        if(isConnected) {
+            //pri WiFi by activeNetwork.getType() malo vracat 1
+            isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+        }
+//        Log.d(TAG, "isWifi = " + isWiFi);
+        return isWiFi;
     }
 }

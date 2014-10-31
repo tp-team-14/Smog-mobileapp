@@ -13,8 +13,6 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.vcelicky.smog.utils.NetworkUtil;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -148,7 +146,7 @@ public class CameraActivity extends BaseActivity {
                 */
 
                 //Start uploading a photo if WiFi is connected and active
-                if(NetworkUtil.isWiFiConnected(getApplicationContext())) {
+                if(isWiFiConnected(CameraActivity.this)) {
                     new UploadAsyncTask().execute();
                 }
                 mCamera.startPreview();
@@ -179,7 +177,7 @@ public class CameraActivity extends BaseActivity {
         }
 
         //ak WiFi nie je zapnuta, vytvori sa priecinok to_upload, kde sa budu ukladat fotky odfotene v offline rezime
-        if(!NetworkUtil.isWiFiConnected(getApplicationContext())) {
+        if(!isWiFiConnected(CameraActivity.this)) {
             mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_PICTURES + File.separator + DIRECTORY_MAIN), DIRECTORY_UPLOAD);
             if(!mediaStorageDir.exists()) {
