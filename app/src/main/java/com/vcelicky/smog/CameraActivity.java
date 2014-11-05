@@ -33,14 +33,14 @@ import java.util.Date;
  */
 public class CameraActivity extends BaseActivity {
     private static final String TAG = CameraActivity.class.getSimpleName();
+    private static final String URL = "http://team14-14.ucebne.fiit.stuba.sk/adhunter/billboards/add";
 
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_COMPRESSED = 2; //BASE64
     public static final String DIRECTORY_MAIN = "MyCameraApp";
     public static final String DIRECTORY_UPLOAD = "to_upload";
 
-    //private static String urlString = "http://192.168.0.101:80";
-    private static String urlString = "http://team14-14.ucebne.fiit.stuba.sk/adhunter/upload-billboard";
+    //private static String URL = "http://192.168.0.101:80";
     private byte[] imageByteArray = null;
     private String imageDataString = null;
 
@@ -208,6 +208,7 @@ public class CameraActivity extends BaseActivity {
     private class UploadAsyncTask extends AsyncTask<String, Integer, String> {
 
         private String response = "";
+        private String responseTest = "";
 
         @Override
         protected void onPreExecute() {
@@ -218,8 +219,9 @@ public class CameraActivity extends BaseActivity {
         protected String doInBackground(String... strings) {
 
             try {
+
                 HttpURLConnection conn = null;
-                URL url = new URL(urlString);
+                URL url = new URL(URL);
                 String attachmentName = "photo";
                 String attachmentFileName = "photo.jpg";
                 String boundary =  "*****";
@@ -247,10 +249,25 @@ public class CameraActivity extends BaseActivity {
                     request.write(imageByteArray);
 
                 request.writeBytes(crlf);
+                //request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
+
+                request.writeBytes(twoHyphens + boundary + crlf);
+                request.writeBytes("Content-Disposition: form-data; name=\"lat\"" + crlf);
+                request.writeBytes(crlf);
+                request.writeBytes("48.145892");
+                request.writeBytes(crlf);
+
+                request.writeBytes(twoHyphens + boundary + crlf);
+                request.writeBytes("Content-Disposition: form-data; name=\"lng\"" + crlf);
+                request.writeBytes(crlf);
+                request.writeBytes("17.107137");
+                request.writeBytes(crlf);
                 request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
 
                 request.flush();
                 request.close();
+
+                Log.d(TAG, "OKKKK");
 
                 InputStream responseStream = new BufferedInputStream(conn.getInputStream());
                 BufferedReader responseStreamReader = new BufferedReader(new InputStreamReader(responseStream));
@@ -269,12 +286,12 @@ public class CameraActivity extends BaseActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             return null;
         }
 
         @Override
         protected void onPostExecute(String s) {
+            Log.d(TAG, "Response: " + response);
             Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
             super.onPostExecute(s);
         }

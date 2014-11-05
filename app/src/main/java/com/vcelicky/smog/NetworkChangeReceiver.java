@@ -34,7 +34,7 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
                                 .setContentText("Niektoré Vaše úlovky ešte neboli odoslané.")
                                 .setAutoCancel(true); //po kliknuti na notifikaciu sa odstrani zo zoznamu notifikacii
 
-                Intent notificationIntent = new Intent(context, CameraActivity.class);
+                Intent notificationIntent = new Intent(context, OnlineActivity.class);
                 // The stack builder object will contain an artificial back stack for the
                 // started Activity.
                 // This ensures that navigating backward from the Activity leads out of
