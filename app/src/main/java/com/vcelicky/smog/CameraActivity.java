@@ -1,8 +1,10 @@
 package com.vcelicky.smog;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -12,6 +14,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesClient;
+import com.google.android.gms.location.LocationClient;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -31,7 +37,9 @@ import java.util.Date;
 /**
  * Created by jerry on 10. 10. 2014.
  */
-public class CameraActivity extends BaseActivity {
+public class CameraActivity extends BaseActivity implements
+        GooglePlayServicesClient.ConnectionCallbacks,
+        GooglePlayServicesClient.OnConnectionFailedListener {
     private static final String TAG = CameraActivity.class.getSimpleName();
     private static final String URL = "http://team14-14.ucebne.fiit.stuba.sk/adhunter/billboards/add";
 
@@ -46,6 +54,9 @@ public class CameraActivity extends BaseActivity {
 
     private Camera mCamera;
     private CameraPreview mPreview;
+
+    private Location mCurrentLocation;
+    private LocationClient mLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +74,22 @@ public class CameraActivity extends BaseActivity {
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mLocationClient = new LocationClient(this, this, this);
+        mLocationClient.connect();
+        Log.d(TAG, "onStart()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mLocationClient.disconnect();
     }
 
     @Override
@@ -73,11 +100,13 @@ public class CameraActivity extends BaseActivity {
 
     private void initListeners() {
         Button captureButton = (Button) findViewById(R.id.button_capture);
+        final Intent intent = new Intent(this, TakenActivity.class);
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //get an image from the camera
                 mCamera.takePicture(null, null, mPicture);
+                startActivity(intent);
             }
         });
     }
@@ -203,6 +232,35 @@ public class CameraActivity extends BaseActivity {
             return null;
         }
         return mediaFile;
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        // Display the connection status
+        //Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "onConnected()");
+
+        if(servicesConnected()) {
+            Log.d(TAG, "services are connected");
+            //mCurrentLocation = mLocationClient.getLastLocation();
+            //Log.d(TAG, "longitude = " + mCurrentLocation.getLongitude()
+            //        + "; latitude = " + mCurrentLocation.getLatitude());
+        } else {
+            Log.d(TAG, "services are NOT connected");
+        }
+
+    }
+
+    @Override
+    public void onDisconnected() {
+        // Display the connection status
+        Toast.makeText(this, "Disconnected. Please re-connect.",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(this, TAG + "onConnectionFailed", Toast.LENGTH_SHORT).show();
     }
 
     private class UploadAsyncTask extends AsyncTask<String, Integer, String> {

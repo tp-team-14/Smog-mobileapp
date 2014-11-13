@@ -5,11 +5,16 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 
 public class BaseActivity extends Activity {
+    private static final String TAG = "BaseActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,4 +61,27 @@ public class BaseActivity extends Activity {
 //        Log.d(TAG, "isWifi = " + isWiFi);
         return isWiFi;
     }
+
+    protected boolean servicesConnected() {
+        // Check that Google Play services is available
+        int resultCode =
+                GooglePlayServicesUtil.
+                        isGooglePlayServicesAvailable(this);
+        // If Google Play services is available
+        if (ConnectionResult.SUCCESS == resultCode) {
+            // In debug mode, log the status
+            Log.d("Location Updates",
+                    "Google Play services is available.");
+            // Continue
+            return true;
+            // Google Play services was not available for some reason.
+            // resultCode holds the error code.
+        } else {
+            // Get the error from Google Play services
+            Log.d(TAG, "servicesConnected = false");
+            return false;
+        }
+    }
+
+
 }
