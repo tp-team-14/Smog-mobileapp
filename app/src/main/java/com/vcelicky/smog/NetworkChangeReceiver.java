@@ -11,6 +11,9 @@ import android.net.NetworkInfo;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.vcelicky.smog.activities.CameraActivity;
+import com.vcelicky.smog.activities.AlreadyOnlineActivity;
+
 /**
  * Created by jerry on 20. 10. 2014.
  */
@@ -29,12 +32,12 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
                 //tu sa udeju zmeny po zapnuti WiFi, a v nasom pripade upload obrazka
                 NotificationCompat.Builder mBuilder =
                         new NotificationCompat.Builder(context)
-                                .setSmallIcon(R.drawable.ic_launcher)
+                                .setSmallIcon(R.drawable.logo)
                                 .setContentTitle("Uploadnúť fotky!")
                                 .setContentText("Niektoré Vaše úlovky ešte neboli odoslané.")
                                 .setAutoCancel(true); //po kliknuti na notifikaciu sa odstrani zo zoznamu notifikacii
 
-                Intent notificationIntent = new Intent(context, OnlineActivity.class);
+                Intent notificationIntent = new Intent(context, AlreadyOnlineActivity.class);
                 // The stack builder object will contain an artificial back stack for the
                 // started Activity.
                 // This ensures that navigating backward from the Activity leads out of

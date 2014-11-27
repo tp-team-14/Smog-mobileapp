@@ -9,8 +9,14 @@
     <FrameLayout
         android:id="@+id/camera_preview"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-    />
+        android:layout_height="fill_parent">
+    </FrameLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/testButton" />
 
     <Button
         android:id="@+id/button_capture"
